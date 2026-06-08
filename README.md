@@ -1,4 +1,4 @@
-# 🔍 Evidence Organizer
+# Evidence Organizer
 
 > Bash CLI for pentesters — auto-sort screenshots, logs, and command output by host, port, and finding type.
 
@@ -12,7 +12,7 @@ rdp_cred_spray_results.log
 nmap_output_final_v2.txt
 ```
 
-Evidence Organizer turns that chaos into:
+Example of Evidence Organizer turns that chaos into:
 ```
 organized/
 ├── 192.168.1.10/
