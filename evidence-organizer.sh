@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
 # evidence-organizer.sh — Pentest Evidence Organizer
-# Usage: ./evidence-organizer.sh <source_dir> <output_dir> [tags...]
-# Example: ./evidence-organizer.sh ./loot ./organized client-acme
 # ============================================================
 
 set -euo pipefail
@@ -14,20 +12,17 @@ EXTRA_TAGS=("$@")
 
 SUPPORTED_EXT="txt|md|log|out|nmap|gnmap|png|jpg|jpeg|gif|pdf|xml|json|html|csv"
 
-# ---- Helper: extract first valid IP from a string ----
 extract_ip() {
     grep -oE '([0-9]{1,3}[._]){3}[0-9]{1,3}' <<< "$1" | \
         sed 's/_/./g' | \
         awk -F. '$1<=255 && $2<=255 && $3<=255 && $4<=255 {print; exit}'
 }
 
-# ---- Helper: extract port number (handles p80, :443, _8080_) ----
 extract_port() {
     grep -oP '(?<=p|port|:)(\d{2,5})(?=[_\-\s]|$)' <<< "${1,,}" | \
         awk '$1>=1 && $1<=65535 {print; exit}'
 }
 
-# ---- Helper: map port to service name ----
 port_to_service() {
     case "$1" in
         21) echo ftp;;   22) echo ssh;;    23) echo telnet;;
@@ -40,7 +35,6 @@ port_to_service() {
     esac
 }
 
-# ---- Helper: detect finding type from filename keywords ----
 extract_finding() {
     local name="${1,,}"
     local -A kw=(
@@ -67,8 +61,7 @@ extract_finding() {
     done
     echo "misc"
 }
-
-# ---- Organize a single file ----
+-
 organize_file() {
     local filepath="$1"
     local filename
@@ -78,8 +71,7 @@ organize_file() {
     [[ "$filename" == *.meta.json ]] && return
 
     local host port service finding folder dest
-
-    # Try to get host from filename, then parent dir name
+ 
     host=$(extract_ip "$filename")
     [[ -z "$host" ]] && host=$(extract_ip "$(basename "$(dirname "$filepath")")")
     [[ -z "$host" ]] && host="unknown-host"
@@ -87,7 +79,6 @@ organize_file() {
     port=$(extract_port "$filename")
     finding=$(extract_finding "${filename%.*}")
 
-    # Build destination folder: host / port-service / finding
     if [[ -n "$port" ]]; then
         service=$(port_to_service "$port")
         folder="${OUTPUT}/${host}/${port}-${service}/${finding}"
@@ -97,13 +88,11 @@ organize_file() {
 
     mkdir -p "$folder"
 
-    # Build clean destination filename
     local safe_host="${host//./_}"
     local port_part=""
     [[ -n "$port" ]] && port_part="_p${port}"
     dest="${folder}/${safe_host}${port_part}_${finding}_${filename}"
 
-    # Handle filename collisions
     local counter=1
     local base_dest="$dest"
     local ext="${filename##*.}"
@@ -114,7 +103,6 @@ organize_file() {
 
     cp "$filepath" "$dest"
 
-    # Write JSON sidecar metadata
     local tags_arr=("${EXTRA_TAGS[@]:-}" "$finding")
     local tags_json
     tags_json=$(printf '"%s",' "${tags_arr[@]}" | sed 's/,$//')
@@ -133,7 +121,6 @@ JSON
     printf "  \033[32m✓\033[0m %-45s → %s\n" "$filename" "${dest#${OUTPUT}/}"
 }
 
-# ---- Main ----
 main() {
     echo ""
     echo "  🔍 Evidence Organizer"
