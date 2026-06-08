@@ -1,6 +1,6 @@
 # Evidence Organizer
 
-> Bash CLI for pentesters — auto-sort screenshots, logs, and command output by host, port, and finding type.
+> Bash CLI for pentesters — auto-sort screenshots, logs, and command output by host, port, and finding type. At this time: The tool is only as smart as the filenames you give it. 
 
 ## The Problem
 
